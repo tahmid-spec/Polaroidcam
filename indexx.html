@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Polaroid Studio ✦</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Inter:wght@300;400;500;600;700&family=Nunito:wght@300;400;600;700&display=swap"
+        rel="stylesheet" />
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #f5f0ff;
+            --bg2: #eee8ff;
+            --surface: #ffffff;
+            --surface2: #faf7ff;
+            --accent1: #b794f4;
+            --accent2: #81e6d9;
+            --accent3: #f6ad55;
+            --accent4: #fc8181;
+            --text: #2d2d3a;
+            --text-muted: #8b8ba0;
+            --border: #e2d9f3;
+            --shadow: rgba(183, 148, 244, 0.18);
+            --radius: 20px;
+            --polaroid-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ── Background Orbs ── */
+        .bg-orbs {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.35;
+        }
+
+        .orb-1 {
+            width: 500px;
+            height: 500px;
+            background: #c4b5fd;
+            top: -120px;
+            left: -100px;
+        }
+
+        .orb-2 {
+            width: 400px;
+            height: 400px;
+            background: #a5f3fc;
+            top: 40%;
+            right: -100px;
+        }
+
+        .orb-3 {
+            width: 300px;
+            height: 300px;
+            background: #fde68a;
+            bottom: -60px;
+            left: 30%;
+        }
+
+        /* ── Layout ── */
+        .app {
+            position: relative;
+            z-index: 1;
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 24px 20px 60px;
+        }
+
+        /* ── Header ── */
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            border-radius: 50px;
+            padding: 10px 24px;
+            box-shadow: 0 4px 20px var(--shadow);
+            margin-bottom: 16px;
+        }
+
+        .logo-icon {
+            font-size: 24px;
+        }
+
+        .logo-text {
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #b794f4, #81e6d9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 15px;
+            font-weight: 400;
+        }
+
+        /* ── Mode Toggle ── */
+        .mode-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 36px;
+        }
+
+        .mode-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 28px;
+            border-radius: 50px;
+            border: 2px solid var(--border);
+            background: white;
+            font-family: 'Nunito', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #b794f4, #9f7aea);
+            border-color: transparent;
+            color: white;
+            box-shadow: 0 6px 20px rgba(183, 148, 244, 0.45);
+        }
+
+        .mode-btn:not(.active):hover {
+            border-color: var(--accent1);
+            color: var(--accent1);
+            transform: translateY(-1px);
+        }
+
+        /* ── Main Grid ── */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 28px;
+            align-items: start;
+        }
+
+        @media (max-width: 960px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ── Panel Card ── */
+        .panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(14px);
+            border-radius: var(--radius);
+            border: 1.5px solid var(--border);
+            padding: 24px;
+            box-shadow: 0 8px 32px var(--shadow);
+        }
+
+        .panel-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+
+        .panel-title span {
+            font-size: 20px;
+        }
+
+        /* ── Camera Section ── */
+        .camera-wrap {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #1a1a2e;
+            aspect-ratio: 4/3;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        #liveVideo,
+        #previewImg {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .camera-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: linear-gradient(to bottom, transparent 70%, rgba(0, 0, 0, 0.3));
+        }
+
+        .camera-grid-lines {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+            background-size: 33.33% 33.33%;
+        }
+
+        .flash-overlay {
+            position: absolute;
+            inset: 0;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0s;
+            border-radius: 16px;
+        }
+
+        .flash-overlay.flash {
+            animation: flashAnim 0.45s ease-out forwards;
+        }
+
+        @keyframes flashAnim {
+            0% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        /* Upload zone */
+        .upload-zone {
+            border: 2.5px dashed var(--border);
+            border-radius: 16px;
+            padding: 60px 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s;
+            background: linear-gradient(135deg, #faf7ff, #f0ebff);
+        }
+
+        .upload-zone:hover,
+        .upload-zone.drag-over {
+            border-color: var(--accent1);
+            background: #f0e8ff;
+            transform: scale(1.01);
+        }
+
+        .upload-zone .upload-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .upload-zone p {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-top: 6px;
+        }
+
+        .upload-zone strong {
+            color: var(--accent1);
+            font-size: 17px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        /* Applied filter label */
+        .filter-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            backdrop-filter: blur(6px);
+            font-family: 'Nunito', sans-serif;
+        }
+
+        /* ── Controls Bar ── */
+        .controls-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            margin-top: 18px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 11px 22px;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            font-family: 'Nunito', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            transition: all 0.22s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #b794f4, #9f7aea);
+            color: white;
+            box-shadow: 0 5px 18px rgba(159, 122, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(159, 122, 234, 0.55);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--text);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent1);
+            color: var(--accent1);
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #fc8181, #f56565);
+            color: white;
+            box-shadow: 0 5px 18px rgba(245, 101, 101, 0.3);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.45;
+            pointer-events: none;
+        }
+
+        /* Capture progress */
+        .capture-progress {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            margin-top: 14px;
+        }
+
+        .prog-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            background: white;
+            transition: all 0.3s;
+        }
+
+        .prog-dot.filled {
+            background: var(--accent1);
+            border-color: var(--accent1);
+            transform: scale(1.2);
+        }
+
+        .prog-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        /* ── Filters Section ── */
+        .filters-scroll {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 6px;
+        }
+
+        .filters-scroll::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .filters-scroll::-webkit-scrollbar-track {
+            background: var(--bg2);
+            border-radius: 10px;
+        }
+
+        .filters-scroll::-webkit-scrollbar-thumb {
+            background: var(--accent1);
+            border-radius: 10px;
+        }
+
+        .filter-chip {
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 14px;
+            border: 2.5px solid transparent;
+            transition: all 0.22s;
+            background: var(--surface2);
+        }
+
+        .filter-chip:hover {
+            border-color: var(--accent1);
+            transform: translateY(-2px);
+        }
+
+        .filter-chip.active {
+            border-color: var(--accent1);
+            background: #f0e8ff;
+        }
+
+        .filter-thumb {
+            width: 52px;
+            height: 40px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+        }
+
+        .filter-thumb canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .filter-name {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        .filter-chip.active .filter-name {
+            color: var(--accent1);
+        }
+
+        /* ── Stickers Section ── */
+        .stickers-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .sticker-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            border: 2px solid var(--border);
+            background: white;
+            font-size: 26px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .sticker-btn:hover {
+            transform: scale(1.15) rotate(5deg);
+            border-color: var(--accent1);
+        }
+
+        .sticker-btn.selected {
+            border-color: var(--accent1);
+            background: #f0e8ff;
+            box-shadow: 0 4px 14px rgba(159, 122, 234, 0.4);
+        }
+
+        /* ── Polaroid Frame ── */
+        .polaroid-frame {
+            background: var(--polaroid-bg);
+            border-radius: 18px;
+            padding: 18px 18px 10px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.06);
+            transition: transform 0.3s ease;
+        }
+
+        .polaroid-frame:hover {
+            transform: rotate(-1deg) scale(1.01);
+        }
+
+        .polaroid-photos {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .photo-slot {
+            position: relative;
+            border-radius: 10px;
+            overflow: visible;
+            aspect-ratio: 3/4;
+            background: #f0ebff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: crosshair;
+        }
+
+        .photo-slot-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .photo-slot img,
+        .photo-slot canvas {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+            display: block;
+        }
+
+        .photo-slot .empty-icon {
+            font-size: 28px;
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        .photo-slot .slot-num {
+            position: absolute;
+            bottom: 6px;
+            right: 8px;
+            font-size: 10px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.8);
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Sticker on photo */
+        .placed-sticker {
+            position: absolute;
+            font-size: 22px;
+            cursor: grab;
+            user-select: none;
+            z-index: 10;
+            transform-origin: center;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            transition: transform 0.1s;
+            line-height: 1;
+        }
+
+        .placed-sticker:hover {
+            transform: scale(1.15);
+        }
+
+        .placed-sticker.dragging {
+            cursor: grabbing;
+            transform: scale(1.2);
+            z-index: 20;
+        }
+
+        /* Delete sticker */
+        .sticker-delete {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #fc8181;
+            color: white;
+            font-size: 11px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 11;
+            border: 2px solid white;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .placed-sticker:hover .sticker-delete {
+            display: flex;
+        }
+
+        /* Thought / Caption */
+        .polaroid-thought {
+            position: relative;
+        }
+
+        .thought-input {
+            width: 100%;
+            border: none;
+            outline: none;
+            resize: none;
+            font-family: 'Caveat', cursive;
+            font-size: 16px;
+            font-weight: 600;
+            color: #4a4a6a;
+            background: transparent;
+            text-align: center;
+            line-height: 1.5;
+            padding: 8px 4px;
+            min-height: 52px;
+        }
+
+        .thought-input::placeholder {
+            color: #c4b5fd;
+        }
+
+        .thought-underline {
+            height: 1.5px;
+            background: linear-gradient(90deg, transparent, #e2d9f3, transparent);
+            margin-top: 2px;
+        }
+
+        /* ── Download Btn ── */
+        .download-section {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .btn-download {
+            background: linear-gradient(135deg, #81e6d9, #4fd1c5);
+            color: white;
+            box-shadow: 0 6px 20px rgba(79, 209, 197, 0.4);
+            font-size: 15px;
+            padding: 13px 32px;
+        }
+
+        .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px rgba(79, 209, 197, 0.5);
+        }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* ── Toast ── */
+        .toast {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%) translateY(30px);
+            background: rgba(30, 30, 50, 0.9);
+            color: white;
+            padding: 12px 28px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Photo count badge */
+        .count-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--accent1);
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent1);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="bg-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <div class="app">
+        <!-- Header -->
+        <header>
+            <div class="logo">
+                <span class="logo-icon">📸</span>
+                <span class="logo-text">Polaroid Studio</span>
+            </div>
+            <p>Capture moments · Add stickers · Apply filters · Frame your story</p>
+        </header>
+
+        <!-- Mode Toggle -->
+        <div class="mode-toggle">
+            <button class="mode-btn active" id="btnLive" onclick="setMode('live')">
+                🎥 Live Camera
+            </button>
+            <button class="mode-btn" id="btnUpload" onclick="setMode('upload')">
+                🖼️ Upload Photo
+            </button>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="main-grid">
+
+            <!-- Left Column: Camera / Upload + Preview Polaroid -->
+            <div style="display:flex;flex-direction:column;gap:24px;">
+
+                <!-- Camera / Upload Panel -->
+                <div class="panel">
+                    <div class="panel-title">
+                        <span id="cameraIcon">🎬</span>
+                        <span id="cameraLabel">Live Camera</span>
+                        <span style="margin-left:auto;" class="count-badge" id="photoCount">0</span>
+                        <span style="font-size:13px;color:var(--text-muted);margin-left:4px;">/ 3</span>
+                    </div>
+
+                    <!-- Live Mode -->
+                    <div id="liveSection">
+                        <div class="camera-wrap" id="cameraWrap">
+                            <video id="liveVideo" autoplay muted playsinline></video>
+                            <div class="camera-overlay"></div>
+                            <div class="camera-grid-lines"></div>
+                            <div class="flash-overlay" id="flashOverlay"></div>
+                            <span class="filter-badge" id="filterBadge" style="display:none;"></span>
+                        </div>
+                        <div class="capture-progress">
+                            <div class="prog-dot" id="pd1"></div>
+                            <div class="prog-dot" id="pd2"></div>
+                            <div class="prog-dot" id="pd3"></div>
+                            <span class="prog-label" id="progLabel">Ready to capture</span>
+                        </div>
+                        <div class="controls-bar">
+                            <button class="btn btn-secondary" id="btnStartCam" onclick="startCamera()">📷 Start
+                                Camera</button>
+                            <button class="btn btn-primary" id="btnCapture" onclick="capturePhoto()" disabled>✨
+                                Capture</button>
+                            <button class="btn btn-danger" id="btnReset" onclick="resetPhotos()">🗑 Reset</button>
+                        </div>
+                    </div>
+
+                    <!-- Upload Mode -->
+                    <div id="uploadSection" style="display:none;">
+                        <div class="upload-zone" id="uploadZone" onclick="triggerUpload()" ondragover="dragover(event)"
+                            ondrop="dropFile(event)" ondragleave="dragleave(event)">
+                            <div class="upload-icon">📁</div>
+                            <strong>Click to browse or drag & drop</strong>
+                            <p>JPEG · PNG · WebP · GIF supported</p>
+                        </div>
+                        <input type="file" id="fileInput" accept="image/*" onchange="handleFileUpload(event)" />
+                        <div class="capture-progress" style="margin-top:14px;">
+                            <div class="prog-dot" id="upd1"></div>
+                            <div class="prog-dot" id="upd2"></div>
+                            <div class="prog-dot" id="upd3"></div>
+                            <span class="prog-label" id="upProgLabel">Upload 3 photos</span>
+                        </div>
+                        <div class="controls-bar">
+                            <button class="btn btn-danger" onclick="resetPhotos()">🗑 Reset All</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Polaroid Frame Preview -->
+                <div class="panel">
+                    <div class="panel-title">
+                        <span>🎞</span> Your Polaroid Frame
+                    </div>
+                    <div class="polaroid-frame" id="polaroidFrame">
+                        <div class="polaroid-photos" id="photosContainer">
+                            <!-- 3 slots rendered by JS -->
+                        </div>
+                        <div class="polaroid-thought">
+                            <textarea class="thought-input" id="thoughtInput" placeholder="Write your thought here... ✨"
+                                rows="2" maxlength="120"></textarea>
+                            <div class="thought-underline"></div>
+                        </div>
+                    </div>
+                    <div class="download-section">
+                        <button class="btn btn-download" onclick="downloadFrame()">⬇️ Save Polaroid</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar -->
+            <div class="sidebar">
+
+                <!-- Filters -->
+                <div class="panel">
+                    <div class="panel-title"><span>🎨</span> Color Filters</div>
+                    <div class="filters-scroll" id="filtersScroll">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+
+                <!-- Stickers -->
+                <div class="panel">
+                    <div class="panel-title"><span>✨</span> Stickers</div>
+                    <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">Select a sticker → Click on
+                        any photo to place it</p>
+                    <div class="stickers-grid" id="stickersGrid">
+                        <!-- Generated by JS -->
+                    </div>
+                    <div
+                        style="margin-top:12px;padding-top:12px;border-top:1.5px solid var(--border);font-size:12px;color:var(--text-muted);">
+                        💡 Drag placed stickers to reposition them
+                    </div>
+                </div>
+
+                <!-- Tips -->
+                <div class="panel" style="background:linear-gradient(135deg,#f0e8ff,#e8f8ff);">
+                    <div class="panel-title"><span>💫</span> How to use</div>
+                    <div style="font-size:13px;color:var(--text-muted);line-height:1.8;font-weight:500;">
+                        <div>📷 Capture or upload <strong>3 photos</strong></div>
+                        <div>🎨 Apply a <strong>color filter</strong></div>
+                        <div>✨ Pick & click to <strong>drop stickers</strong></div>
+                        <div>✍️ Write your <strong>thought</strong> below</div>
+                        <div>⬇️ Download your <strong>frame!</strong></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        /* ═══════════════════════════════════════════
+           STATE
+        ═══════════════════════════════════════════ */
+        let mode = 'live';
+        let stream = null;
+        let photos = [null, null, null];   // dataURL for each slot
+        let photoSlotEls = [];
+        let selectedSticker = null;
+        let activeFilter = 'none';
+        let draggingSticker = null;
+        let dragOffsetX = 0, dragOffsetY = 0;
+        let currentUploadSlot = 0;
+
+        /* ═══════════════════════════════════════════
+           FILTERS
+        ═══════════════════════════════════════════ */
+        const FILTERS = [
+            { id: 'none', name: 'Normal', css: 'none' },
+            { id: 'warm', name: 'Warm', css: 'sepia(30%) saturate(130%) brightness(105%)' },
+            { id: 'cool', name: 'Cool', css: 'hue-rotate(20deg) saturate(110%) brightness(102%)' },
+            { id: 'vintage', name: 'Vintage', css: 'sepia(60%) contrast(90%) brightness(95%)' },
+            { id: 'fade', name: 'Fade', css: 'contrast(80%) brightness(110%) saturate(80%)' },
+            { id: 'vivid', name: 'Vivid', css: 'saturate(160%) contrast(110%)' },
+            { id: 'mono', name: 'Mono', css: 'grayscale(100%)' },
+            { id: 'rose', name: 'Rose', css: 'sepia(20%) hue-rotate(320deg) saturate(120%)' },
+            { id: 'dreamy', name: 'Dreamy', css: 'brightness(108%) saturate(80%) contrast(90%) blur(0.3px)' },
+            { id: 'golden', name: 'Golden', css: 'sepia(40%) saturate(150%) brightness(110%) hue-rotate(-10deg)' },
+        ];
+
+        /* ═══════════════════════════════════════════
+           STICKERS
+        ═══════════════════════════════════════════ */
+        const STICKERS = [
+            '⭐', '🌟', '💫', '✨', '🌈', '🦋', '🌸', '🌺', '🌻', '🍀',
+            '❤️', '💜', '💙', '💚', '🧡', '🎀', '🎊', '🎉', '🎈', '🎵',
+            '🌙', '☀️', '🌤', '⚡', '🔥', '🌊', '🍭', '🍓', '🍦', '☁️',
+            '🦄', '🐝', '🐬', '🦊', '🦋', '🌴', '🍃', '🪴', '🌵', '🍁',
+        ];
+
+        /* ═══════════════════════════════════════════
+           INIT
+        ═══════════════════════════════════════════ */
+        document.addEventListener('DOMContentLoaded', () => {
+            buildFilters();
+            buildStickers();
+            buildPhotoSlots();
+            updateProgress();
+        });
+
+        /* ═══════════════════════════════════════════
+           MODE
+        ═══════════════════════════════════════════ */
+        function setMode(m) {
+            mode = m;
+            document.getElementById('btnLive').classList.toggle('active', m === 'live');
+            document.getElementById('btnUpload').classList.toggle('active', m === 'upload');
+            document.getElementById('liveSection').style.display = m === 'live' ? '' : 'none';
+            document.getElementById('uploadSection').style.display = m === 'upload' ? '' : 'none';
+            document.getElementById('cameraIcon').textContent = m === 'live' ? '🎬' : '📂';
+            document.getElementById('cameraLabel').textContent = m === 'live' ? 'Live Camera' : 'Upload Photos';
+
+            if (m !== 'live' && stream) {
+                stream.getTracks().forEach(t => t.stop());
+                stream = null;
+            }
+            currentUploadSlot = photos.filter(p => p !== null).length;
+            resetPhotos();
+        }
+
+        /* ═══════════════════════════════════════════
+           CAMERA
+        ═══════════════════════════════════════════ */
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 1280 } }, audio: false });
+                document.getElementById('liveVideo').srcObject = stream;
+                document.getElementById('btnCapture').disabled = false;
+                document.getElementById('btnStartCam').style.display = 'none';
+                showToast('📷 Camera ready! Strike a pose ✨');
+            } catch (e) {
+                showToast('⚠️ Camera access denied. Please check permissions.', 3500);
+            }
+        }
+
+        function capturePhoto() {
+            const slot = photos.findIndex(p => p === null);
+            if (slot === -1) { showToast('🎞 All 3 slots filled! Reset to start over.'); return; }
+            if (!stream) { showToast('⚠️ Start the camera first!'); return; }
+
+            const video = document.getElementById('liveVideo');
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+            const ctx = canvas.getContext('2d');
+            ctx.filter = activeFilter !== 'none' ? FILTERS.find(f => f.id === activeFilter).css : 'none';
+            ctx.drawImage(video, 0, 0);
+
+            // Flash
+            const flash = document.getElementById('flashOverlay');
+            flash.classList.remove('flash');
+            void flash.offsetWidth;
+            flash.classList.add('flash');
+
+            photos[slot] = canvas.toDataURL('image/jpeg', 0.9);
+            updateSlot(slot);
+            updateProgress();
+
+            if (photos.filter(p => p).length === 3) {
+                document.getElementById('btnCapture').disabled = true;
+                showToast('🎉 3 photos captured! Now customize your frame!');
+            } else {
+                showToast(`📸 Photo ${slot + 1} captured!`);
+            }
+        }
+
+        /* ═══════════════════════════════════════════
+           UPLOAD
+        ═══════════════════════════════════════════ */
+        function triggerUpload() {
+            if (photos.filter(p => p).length >= 3) { showToast('🎞 Already have 3 photos!'); return; }
+            document.getElementById('fileInput').click();
+        }
+        function dragover(e) { e.preventDefault(); document.getElementById('uploadZone').classList.add('drag-over'); }
+        function dragleave(e) { document.getElementById('uploadZone').classList.remove('drag-over'); }
+        function dropFile(e) {
+            e.preventDefault();
+            document.getElementById('uploadZone').classList.remove('drag-over');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) processFile(file);
+        }
+        function handleFileUpload(e) {
+            const file = e.target.files[0];
+            if (file) processFile(file);
+            e.target.value = '';
+        }
+        function processFile(file) {
+            const slot = photos.findIndex(p => p === null);
+            if (slot === -1) { showToast('🎞 All 3 slots filled!'); return; }
+            const reader = new FileReader();
+            reader.onload = ev => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const aspect = img.width / img.height;
+                    canvas.width = 400; canvas.height = Math.round(400 / aspect);
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    photos[slot] = canvas.toDataURL('image/jpeg', 0.9);
+                    updateSlot(slot);
+                    updateProgress();
+                    const filled = photos.filter(p => p).length;
+                    showToast(filled === 3 ? '🎉 All 3 photos ready!' : `🖼 Photo ${slot + 1} added!`);
+                };
+                img.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        /* ═══════════════════════════════════════════
+           PHOTO SLOTS
+        ═══════════════════════════════════════════ */
+        function buildPhotoSlots() {
+            const container = document.getElementById('photosContainer');
+            container.innerHTML = '';
+            photoSlotEls = [];
+            for (let i = 0; i < 3; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'photo-slot';
+                slot.dataset.index = i;
+                slot.innerHTML = `
+      <div class="photo-slot-inner" id="slotInner${i}">
+        <span class="empty-icon">📷</span>
+      </div>`;
+                slot.addEventListener('click', e => onSlotClick(e, i));
+                container.appendChild(slot);
+                photoSlotEls.push(slot);
+            }
+        }
+
+        function updateSlot(i) {
+            const inner = document.getElementById(`slotInner${i}`);
+            if (!photos[i]) {
+                inner.innerHTML = `<span class="empty-icon">📷</span>`;
+                return;
+            }
+            const filterCSS = activeFilter !== 'none' ? FILTERS.find(f => f.id === activeFilter).css : 'none';
+            inner.innerHTML = `
+    <img src="${photos[i]}" alt="Photo ${i + 1}" style="filter:${filterCSS};" />
+    <span class="slot-num">${i + 1}</span>`;
+        }
+
+        function updateAllSlots() {
+            for (let i = 0; i < 3; i++) updateSlot(i);
+        }
+
+        /* ═══════════════════════════════════════════
+           STICKER PLACEMENT
+        ═══════════════════════════════════════════ */
+        function onSlotClick(e, slotIdx) {
+            if (!selectedSticker || !photos[slotIdx]) return;
+            const slot = photoSlotEls[slotIdx];
+            const rect = slot.getBoundingClientRect();
+
+            const stickerEl = createStickerEl(selectedSticker, slotIdx);
+            const x = ((e.clientX - rect.left) / rect.width) * 100;
+            const y = ((e.clientY - rect.top) / rect.height) * 100;
+            stickerEl.style.left = `${x}%`;
+            stickerEl.style.top = `${y}%`;
+            stickerEl.style.transform = 'translate(-50%, -50%)';
+
+            // Find or create sticker container
+            let container = slot.querySelector('.sticker-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.className = 'sticker-container';
+                container.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:5;';
+                slot.appendChild(container);
+            }
+            container.style.pointerEvents = 'auto';
+            container.appendChild(stickerEl);
+
+            animateDrop(stickerEl);
+        }
+
+        function createStickerEl(emoji, slotIdx) {
+            const el = document.createElement('div');
+            el.className = 'placed-sticker';
+            el.dataset.slot = slotIdx;
+            el.innerHTML = emoji;
+            el.style.position = 'absolute';
+
+            // Delete btn
+            const del = document.createElement('div');
+            del.className = 'sticker-delete';
+            del.innerHTML = '×';
+            del.addEventListener('click', ev => { ev.stopPropagation(); el.remove(); });
+            el.appendChild(del);
+
+            // Drag
+            el.addEventListener('mousedown', startDrag);
+            el.addEventListener('touchstart', startTouchDrag, { passive: false });
+            return el;
+        }
+
+        function animateDrop(el) {
+            el.style.transform = 'translate(-50%, -50%) scale(0)';
+            requestAnimationFrame(() => {
+                el.style.transition = 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                el.style.transform = 'translate(-50%, -50%) scale(1)';
+            });
+        }
+
+        /* ── Drag stickers ── */
+        function startDrag(e) {
+            if (e.target.classList.contains('sticker-delete')) return;
+            e.preventDefault(); e.stopPropagation();
+            draggingSticker = e.currentTarget;
+            draggingSticker.classList.add('dragging');
+            const rect = draggingSticker.parentElement.getBoundingClientRect();
+            dragOffsetX = e.clientX - (parseFloat(draggingSticker.style.left) / 100 * rect.width + rect.left);
+            dragOffsetY = e.clientY - (parseFloat(draggingSticker.style.top) / 100 * rect.height + rect.top);
+            document.addEventListener('mousemove', onDragMove);
+            document.addEventListener('mouseup', stopDrag);
+        }
+        function onDragMove(e) {
+            if (!draggingSticker) return;
+            const rect = draggingSticker.parentElement.getBoundingClientRect();
+            let x = ((e.clientX - dragOffsetX - rect.left) / rect.width) * 100;
+            let y = ((e.clientY - dragOffsetY - rect.top) / rect.height) * 100;
+            x = Math.max(5, Math.min(95, x));
+            y = Math.max(5, Math.min(95, y));
+            draggingSticker.style.left = `${x}%`;
+            draggingSticker.style.top = `${y}%`;
+        }
+        function stopDrag() {
+            if (draggingSticker) { draggingSticker.classList.remove('dragging'); draggingSticker = null; }
+            document.removeEventListener('mousemove', onDragMove);
+            document.removeEventListener('mouseup', stopDrag);
+        }
+
+        /* Touch drag */
+        function startTouchDrag(e) {
+            if (e.target.classList.contains('sticker-delete')) return;
+            e.preventDefault(); e.stopPropagation();
+            draggingSticker = e.currentTarget;
+            draggingSticker.classList.add('dragging');
+            const t = e.touches[0];
+            const rect = draggingSticker.parentElement.getBoundingClientRect();
+            dragOffsetX = t.clientX - (parseFloat(draggingSticker.style.left) / 100 * rect.width + rect.left);
+            dragOffsetY = t.clientY - (parseFloat(draggingSticker.style.top) / 100 * rect.height + rect.top);
+            document.addEventListener('touchmove', onTouchMove, { passive: false });
+            document.addEventListener('touchend', stopDrag);
+        }
+        function onTouchMove(e) {
+            if (!draggingSticker) return;
+            e.preventDefault();
+            const t = e.touches[0];
+            const rect = draggingSticker.parentElement.getBoundingClientRect();
+            let x = ((t.clientX - dragOffsetX - rect.left) / rect.width) * 100;
+            let y = ((t.clientY - dragOffsetY - rect.top) / rect.height) * 100;
+            x = Math.max(5, Math.min(95, x));
+            y = Math.max(5, Math.min(95, y));
+            draggingSticker.style.left = `${x}%`;
+            draggingSticker.style.top = `${y}%`;
+        }
+
+        /* ═══════════════════════════════════════════
+           BUILD FILTERS UI
+        ═══════════════════════════════════════════ */
+        function buildFilters() {
+            const scroll = document.getElementById('filtersScroll');
+            scroll.innerHTML = '';
+            FILTERS.forEach(f => {
+                const chip = document.createElement('div');
+                chip.className = `filter-chip ${f.id === activeFilter ? 'active' : ''}`;
+                chip.dataset.id = f.id;
+                chip.onclick = () => applyFilter(f.id);
+
+                // Mini thumb canvas
+                const thumbDiv = document.createElement('div');
+                thumbDiv.className = 'filter-thumb';
+                const canvas = document.createElement('canvas');
+                canvas.width = 52; canvas.height = 40;
+                const ctx = canvas.getContext('2d');
+                // Draw gradient demo
+                const grad = ctx.createLinearGradient(0, 0, 52, 40);
+                grad.addColorStop(0, '#f6d365'); grad.addColorStop(0.5, '#fda085'); grad.addColorStop(1, '#c4b5fd');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, 52, 40);
+                // Apply filter via css
+                canvas.style.filter = f.css !== 'none' ? f.css : '';
+                thumbDiv.appendChild(canvas);
+
+                chip.innerHTML = `<div class="filter-name">${f.name}</div>`;
+                chip.insertBefore(thumbDiv, chip.firstChild);
+                scroll.appendChild(chip);
+            });
+        }
+
+        function applyFilter(id) {
+            activeFilter = id;
+            document.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c.dataset.id === id));
+            updateAllSlots();
+
+            const badge = document.getElementById('filterBadge');
+            if (id !== 'none') { badge.textContent = FILTERS.find(f => f.id === id).name; badge.style.display = ''; }
+            else badge.style.display = 'none';
+
+            showToast(`🎨 Filter: ${FILTERS.find(f => f.id === id).name}`);
+        }
+
+        /* ═══════════════════════════════════════════
+           BUILD STICKERS UI
+        ═══════════════════════════════════════════ */
+        function buildStickers() {
+            const grid = document.getElementById('stickersGrid');
+            grid.innerHTML = '';
+            STICKERS.forEach(s => {
+                const btn = document.createElement('button');
+                btn.className = 'sticker-btn';
+                btn.textContent = s;
+                btn.title = `Add ${s}`;
+                btn.onclick = () => selectSticker(s, btn);
+                grid.appendChild(btn);
+            });
+        }
+
+        function selectSticker(s, btn) {
+            if (selectedSticker === s) {
+                selectedSticker = null;
+                btn.classList.remove('selected');
+                showToast('Sticker deselected');
+                return;
+            }
+            selectedSticker = s;
+            document.querySelectorAll('.sticker-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            showToast(`${s} selected — click any photo to place it!`);
+        }
+
+        /* ═══════════════════════════════════════════
+           PROGRESS
+        ═══════════════════════════════════════════ */
+        function updateProgress() {
+            const filled = photos.filter(p => p).length;
+            document.getElementById('photoCount').textContent = filled;
+
+            // Live dots
+            ['pd1', 'pd2', 'pd3'].forEach((id, i) => {
+                const el = document.getElementById(id);
+                if (el) el.classList.toggle('filled', i < filled);
+            });
+            ['upd1', 'upd2', 'upd3'].forEach((id, i) => {
+                const el = document.getElementById(id);
+                if (el) el.classList.toggle('filled', i < filled);
+            });
+
+            const label = filled === 0 ? 'Ready to capture' : filled < 3 ? `${3 - filled} more to go!` : '🎉 All captured!';
+            const upLabel = filled === 0 ? 'Upload 3 photos' : filled < 3 ? `${3 - filled} more needed` : '🎉 All uploaded!';
+            const progLabel = document.getElementById('progLabel');
+            if (progLabel) progLabel.textContent = label;
+            const upProgLabel = document.getElementById('upProgLabel');
+            if (upProgLabel) upProgLabel.textContent = upLabel;
+        }
+
+        /* ═══════════════════════════════════════════
+           RESET
+        ═══════════════════════════════════════════ */
+        function resetPhotos() {
+            photos = [null, null, null];
+            currentUploadSlot = 0;
+            buildPhotoSlots();
+            updateProgress();
+            const cap = document.getElementById('btnCapture');
+            if (cap) cap.disabled = !stream;
+            showToast('🗑 Reset! Fresh start.');
+        }
+
+        /* ═══════════════════════════════════════════
+           DOWNLOAD
+        ═══════════════════════════════════════════ */
+        async function downloadFrame() {
+            if (photos.filter(p => p).length === 0) { showToast('📸 Capture or upload photos first!'); return; }
+            showToast('⏳ Generating your polaroid...');
+            try {
+                const frame = document.getElementById('polaroidFrame');
+                const canvas = await html2canvas(frame, {
+                    scale: 2, useCORS: true, backgroundColor: '#ffffff',
+                    logging: false,
+                });
+                const link = document.createElement('a');
+                link.download = `polaroid-${Date.now()}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                showToast('🎉 Polaroid saved!');
+            } catch (e) {
+                showToast('⚠️ Could not export. Try a different browser.', 3000);
+            }
+        }
+
+        /* ═══════════════════════════════════════════
+           TOAST
+        ═══════════════════════════════════════════ */
+        let toastTimer = null;
+        function showToast(msg, duration = 2200) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => t.classList.remove('show'), duration);
+        }
+    </script>
+</body>
+
+</html>
